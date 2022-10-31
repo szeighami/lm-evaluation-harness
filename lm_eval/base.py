@@ -343,10 +343,13 @@ class BaseLM(LM):
         re_ord = utils.Reorderer(requests, _collate)
 
         for context, until in tqdm(re_ord.get_reordered()):
-            if isinstance(until, str):
-                until = [until]
+            if until == "":
+                primary_until = None
+            else:
+                if isinstance(until, str):
+                    until = [until]
 
-            (primary_until,) = self.tok_encode(until[0])
+                (primary_until,) = self.tok_encode(until[0])
 
             context_enc = torch.tensor(
                 [self.tok_encode(context)[self.max_gen_toks - self.max_length :]]

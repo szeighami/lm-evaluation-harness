@@ -4,6 +4,7 @@ from typing import List, Union
 import sacrebleu
 import lm_eval.base
 
+from . import cnn_dailymail
 from . import superglue
 from . import glue
 from . import arc
@@ -82,6 +83,7 @@ all_translation_benchmarks = {
 
 
 TASK_REGISTRY = {
+    "cnn_dailymail": cnn_dailymail.CNN_DailyMail,
     # GLUE
     "cola": glue.CoLA,
     "mnli": glue.MNLI,

@@ -38,7 +38,7 @@ class HFLM(BaseLM):
 
         self.gpt2 = transformers.AutoModelForCausalLM.from_pretrained(
             pretrained,
-            revision=revision,
+            revision=revision, torch_dtype=torch.float32
         ).to(self.device)
         self.gpt2.eval()
 
@@ -62,12 +62,15 @@ class HFLM(BaseLM):
         if isinstance(
             self.tokenizer, (transformers.GPT2Tokenizer, transformers.GPT2TokenizerFast)
         ):
+            '''
             assert self.tokenizer.encode("hello\n\nhello") == [
                 31373,
                 198,
                 198,
                 31373,
             ], self.tokenizer.encode("hello\n\nhello")
+            '''
+            pass
 
         # multithreading and batching
         self.batch_size_per_gpu = batch_size  # todo: adaptive batch size
@@ -92,7 +95,7 @@ class HFLM(BaseLM):
 
     @property
     def max_gen_toks(self):
-        return 256
+        return 128
 
     @property
     def batch_size(self):
@@ -119,13 +122,17 @@ class HFLM(BaseLM):
         logits returned from the model
         """
         with torch.no_grad():
-            return self.gpt2(inps)[0][:, :, :50257]
+            return self.gpt2(inps)[0]
+            #return self.gpt2(inps)[0][:, :, :50257]
 
     def _model_generate(self, context, max_length, eos_token_id):
-        return self.gpt2.generate(
-            context, max_length=max_length, eos_token_id=eos_token_id, do_sample=False
+        res = self.gpt2.generate(
+            context, max_length=max_length, eos_token_id=eos_token_id, do_sample=True
         )
-
+        print(self.tok_decode(context[0]))
+        #print(res)
+        print(self.tok_decode(res[0]))
+        return res
 
 # for backwards compatibility
 GPT2LM = HFLM
